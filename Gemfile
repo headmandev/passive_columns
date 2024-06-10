@@ -3,5 +3,6 @@ source "https://rubygems.org"
 
 gemspec
 
-gem "sqlite3"
+gem "sqlite3",  "~> 1.4"
 gem "activerecord", "~> 7"
+gem "activesupport", "~> 7"

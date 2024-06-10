@@ -1,5 +1,9 @@
 # frozen_string_literal: true
 
+require "active_record"
+require "active_record/relation"
+require "active_support/core_ext/class"
+require "active_support/concern"
 require "passive_columns/loader"
 
 # PassiveColumns module is the module
@@ -104,3 +108,5 @@ module PassiveColumns
     @_passive_column_loader ||= PassiveColumns::Loader.new(self, _passive_columns)
   end
 end
+
+ActiveRecord::Relation.prepend PassiveColumns::ActiveRecordRelationExtension

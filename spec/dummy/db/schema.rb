@@ -9,8 +9,7 @@ ActiveRecord::Schema.define(version: 2024_05_06_152000) do
   create_table "projects" do |t|
     t.bigint "user_id", null: false
     t.string "name", null: false
-    t.jsonb "paths", default: [], null: false
-    t.jsonb "settings", default: {}, null: false
+    t.text "description", default: ""
     t.text "guidelines", default: ""
   end
 
