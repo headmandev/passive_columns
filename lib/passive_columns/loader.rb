@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+
 #
 # @!attribute [r] lazy_columns
 # @return [Array<Symbol>]

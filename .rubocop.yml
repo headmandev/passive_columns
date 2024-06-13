@@ -16,5 +16,8 @@ Metrics/BlockLength:
   Exclude:
     - 'spec/**/*.rb'
 
+Metrics/AbcSize:
+  Max: 20
+
 Style/NumericLiterals:
   Enabled: false

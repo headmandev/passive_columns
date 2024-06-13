@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-#
+
 module PassiveColumns
   # ActiveRecordRelationExtension is a module that extends ActiveRecord::Relation
   # to automatically select all columns except passive columns if no columns are selected.

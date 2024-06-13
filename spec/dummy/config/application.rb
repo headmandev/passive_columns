@@ -1,8 +1,10 @@
-require_relative "boot"
+# frozen_string_literal: true
 
-require "rails"
-require "action_controller/railtie"
-require "active_record/railtie"
+require_relative 'boot'
+
+require 'rails'
+require 'action_controller/railtie'
+require 'active_record/railtie'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.

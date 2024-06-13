@@ -1,11 +1,11 @@
 # frozen_string_literal: true
 
-require_relative "dummy/config/environment"
+require_relative 'dummy/config/environment'
 
-require "active_record"
-require "passive_columns"
+require 'active_record'
+require 'passive_columns'
 
-ENV["RAILS_ENV"] = "test"
+ENV['RAILS_ENV'] = 'test'
 
 RSpec.configure do |config|
   config.order = :random
@@ -17,8 +17,8 @@ RSpec.configure do |config|
 end
 
 ActiveRecord::Base.establish_connection(
-  adapter: "sqlite3",
-  database: ":memory:"
+  adapter: 'sqlite3',
+  database: ':memory:'
 )
 
 load "#{Rails.root}/db/schema.rb"

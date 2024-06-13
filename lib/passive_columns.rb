@@ -1,10 +1,12 @@
 # frozen_string_literal: true
 
-require "active_record"
-require "active_record/relation"
-require "active_support/core_ext/class"
-require "active_support/concern"
-require "passive_columns/loader"
+# require "active_record"
+# require "active_record/relation"
+# require "active_support/core_ext/class"
+# require "active_support/concern"
+require 'passive_columns/loader'
+# require 'passive_columns/railtie' if defined?(::Rails::Railtie)
+require 'passive_columns/active_record_relation_extension'
 
 # PassiveColumns module is the module
 # that allows you to skip retrieving the column values from the database by default.
