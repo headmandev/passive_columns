@@ -6,7 +6,7 @@ ActiveRecord::Schema.define(version: 2024_05_06_152000) do
     t.bigint 'default_project_id'
   end
 
-  create_table 'projects' do |t|
+  create_table :projects do |t|
     t.bigint 'user_id', null: false
     t.string 'name', null: false
     t.text 'description', default: ''
