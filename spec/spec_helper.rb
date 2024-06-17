@@ -2,6 +2,7 @@
 
 require_relative 'dummy/config/environment'
 
+require 'active_support'
 require 'active_record'
 require 'passive_columns'
 

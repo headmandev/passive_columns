@@ -14,6 +14,5 @@ module Dummy
   class Application < Rails::Application
     # config.logger = Logger.new("/dev/null")
     config.eager_load = false
-    config.active_support.cache_format_version = 7.1
   end
 end
