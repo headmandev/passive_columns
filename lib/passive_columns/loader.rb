@@ -1,6 +1,5 @@
 # frozen_string_literal: true
 
-#
 # @!attribute [r] lazy_columns
 # @return [Array<Symbol>]
 # @!attribute [r] model
@@ -37,7 +36,7 @@ module PassiveColumns
     private
 
     def pick_value(column)
-      model.class.unscoped.where(model.send(:_in_memory_query_constraints_hash)).pick(column)
+      model.class.unscoped.where(identity_constraints).pick(column)
     end
 
     def identity_constraints
