@@ -1,13 +1,7 @@
 # frozen_string_literal: true
 
-# require "active_record"
-# require "active_record/relation"
-# require "active_support/core_ext/class"
-# require "active_support/concern"
-require 'passive_columns/railtie' if defined?(::Rails::Railtie)
+require 'passive_columns/railtie' if defined?(Rails::Railtie)
 require 'passive_columns/loader'
-# require 'passive_columns/active_record_relation_extension'
-# require 'passive_columns/active_record_association_builder_extension'
 
 # PassiveColumns module is the module
 # that allows you to skip retrieving the column values from the database by default.
@@ -44,7 +38,6 @@ module PassiveColumns
 
   included do
     class_attribute :_passive_columns, default: []
-    class_attribute :_passive_columns_skip_validation_if_not_set, default: true
   end
 
   class_methods do
@@ -52,17 +45,11 @@ module PassiveColumns
     # While the columns aren't actively loading, they are still responsive and load when called upon.
     #  passive_columns :huge_article, :settings
     # @param [Array<Symbol>] columns
-    # @param [Boolean] retrieve_before_set Retrieve before setting the values. (Keep the model's ".changes" working)
-    # @param [Boolean] skip_validation_if_not_set Skip validation for unset/not retrieved columns?
     # @return [void]
-    def passive_columns(*columns, retrieve_before_set: true, skip_validation_if_not_set: true)
+    def passive_columns(*columns)
       self._passive_columns = columns.map(&:to_s)
-      self._passive_columns_skip_validation_if_not_set = skip_validation_if_not_set
       columns.each do |column|
         define_method(column) { _passive_column_loader.load(column) { super() } }
-        next unless retrieve_before_set
-
-        # make sure the value is loaded before setting it
         define_method(:"#{column}=") do |value|
           _passive_column_loader.load(column)
           super(value)
@@ -71,8 +58,7 @@ module PassiveColumns
     end
 
     # Each validation rule directly associated with a passive column
-    # will have an IF clause added by default to skip validation if the column is not set.
-    #
+    # has an "if: -> {..}" added by default to skip validation if the column is not set.
     #  passive_columns :huge_article
     #  validates :huge_article, presence: true
     #
@@ -80,6 +66,14 @@ module PassiveColumns
     # and will be equivalent:
     #  passive_columns :huge_article
     #  validates :huge_article, presence: true, if: -> { attributes.key?('huge_article') }
+    #
+    # Another example with a condition:
+    #  passive_columns :huge_article
+    #  validates :huge_article, presence: true, if: -> { status == 'active' }
+    #
+    # The above code will be equivalent to the below under the hood:
+    #  passive_columns :huge_article
+    #  validates :huge_article, presence: true, if: -> { attributes.key?('huge_article') && status == 'active' }
     #
     # !! A validation rule will not be converted if the rule has been set for many attributes.
     #  passive_columns :huge_article
@@ -91,19 +85,24 @@ module PassiveColumns
       opts = filter_list.extract_options!
       if name == :validate && opts[:attributes]&.one?
         passive_column = opts[:attributes].map(&:to_s) & _passive_columns
-        if passive_column.present?
-          opts[:if] = Array(opts[:if]) << lambda {
-            _passive_columns_skip_validation_if_not_set == false ? true : attributes.key?(passive_column)
-          }
-        end
+        opts[:if] = ([-> { attributes.key?(passive_column) }] + Array(opts[:if])) if passive_column.present?
       end
       super(name, *filter_list, opts, &block)
     end
   end
 
-  # @param [Symbol] column
+  # This method loads a column value, if not already loaded, from the database
+  # regardless of whether the column is added to "passive_columns" or not.
+  #
+  # It uses the Rails' ".pick" method to get the value of the column under the hood
+  #  user = User.select('id').take!
+  #  user.load_column(:name) # => SELECT "name" FROM "users" WHERE "id" = ? LIMIT ?
+  #  'John'
+  #  user.load_column(:name)
+  #  'John'
+  # @param [Symbol, String] column
   # @return [any]
-  def load_passive_column(column)
+  def load_column(column)
     _passive_column_loader.load(column, force: true)
   end
 
@@ -111,6 +110,3 @@ module PassiveColumns
     @_passive_column_loader ||= PassiveColumns::Loader.new(self, _passive_columns)
   end
 end
-
-# ActiveRecord::Relation.prepend PassiveColumns::ActiveRecordRelationExtension
-# ActiveRecord::Associations::Builder::Association.prepend PassiveColumns::ActiveRecordAssociationBuilderExtension
