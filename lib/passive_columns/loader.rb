@@ -40,7 +40,7 @@ module PassiveColumns
     end
 
     def identity_constraints
-      @identity_constraints ||= model.send(:_in_memory_query_constraints_hash)
+      @identity_constraints ||= model.send(:_query_constraints_hash)
     end
   end
 end
