@@ -6,7 +6,7 @@ module PassiveColumns
   module ActiveRecordRelationExtension
     def exec_main_query(**args)
       _set_columns_except_passive_if_nothing_selected
-      super(**args)
+      super
     end
 
     def to_sql
