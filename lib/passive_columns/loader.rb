@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-# @!attribute [r] lazy_columns
-# @return [Array<Symbol>]
-# @!attribute [r] model
-# @return [LazyColumns]
 module PassiveColumns
   # Loader is a class helper that loads a column value from the database if it is not loaded yet.
   class Loader
