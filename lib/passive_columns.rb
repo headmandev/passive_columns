@@ -85,7 +85,7 @@ module PassiveColumns
       opts = filter_list.extract_options!
       if name == :validate && opts[:attributes]&.one?
         passive_column = opts[:attributes].map(&:to_s) & _passive_columns
-        opts[:if] = ([-> { attributes.key?(passive_column) }] + Array(opts[:if])) if passive_column.present?
+        opts[:if] = ([-> { attributes.key?(passive_column.first) }] + Array(opts[:if])) if passive_column.present?
       end
       super(name, *filter_list, opts, &block)
     end

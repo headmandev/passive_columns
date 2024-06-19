@@ -87,5 +87,105 @@ RSpec.describe 'PassiveColumns' do
         expect(project.attributes.keys).to match_array(%w[id name user_id description])
       end
     end
+
+    context 'to_sql' do
+      it 'does not break uninvolved models' do
+        expect(User.all.to_sql).to eq('SELECT "users".* FROM "users"')
+      end
+
+      it 'returns correct query' do
+        sql = Project.all.to_sql
+        expect(sql).to \
+          eq('SELECT "projects"."id", "projects"."user_id", "projects"."name" FROM "projects"')
+      end
+
+      it 'returns correct query via association' do
+        sql = user.projects.to_sql
+        expect(sql).to \
+          eq(
+            format(
+              'SELECT "projects"."id", "projects"."user_id", "projects"."name" FROM "projects" ' \
+              'WHERE "projects"."user_id" = %<user_id>d',
+              user_id: user.id
+            )
+          )
+      end
+
+      it 'returns correct query via association and with a condition' do
+        sql = user.projects.where('id > ?', 0).to_sql
+        expect(sql).to \
+          eq(
+            format(
+              'SELECT "projects"."id", "projects"."user_id", "projects"."name" FROM "projects" ' \
+              'WHERE "projects"."user_id" = %<user_id>d AND (id > 0)',
+              user_id: user.id
+            )
+          )
+      end
+
+      it 'returns correct query via association with one condition and with selection' do
+        sql = user.projects.select('id').where('id > ?', 0).to_sql
+        expect(sql).to \
+          eq(
+            format(
+              'SELECT "projects"."id" FROM "projects" WHERE "projects"."user_id" = %<user_id>d AND (id > 0)',
+              user_id: user.id
+            )
+          )
+      end
+
+      it 'returns correct query if there is a condition' do
+        sql = Project.where('id > ?', 0).to_sql
+        expect(sql).to \
+          eq('SELECT "projects"."id", "projects"."user_id", "projects"."name" FROM "projects" WHERE (id > 0)')
+      end
+
+      it 'returns correct query if there is the parent class with passive_columns and condition' do
+        sql = ProjectWithPassiveDescription.where('id > ?', 0).to_sql
+        expect(sql).to \
+          eq(
+            'SELECT "projects"."id", "projects"."user_id", ' \
+            '"projects"."name", "projects"."guidelines" FROM "projects" WHERE (id > 0)'
+          )
+      end
+    end
+
+    context 'manipulations' do
+      it 'skips the description attribute check because it is not modified' do
+        Project.create!(user_id: user.id, name: 'random 1', description: 'a description', guidelines: 'Guidelines')
+        Project.create!(user_id: user.id, name: 'random 2', description: 'a description', guidelines: 'Guidelines')
+        Project.where('id > ?', 0).find_each do |project|
+          expect(project.attributes.keys).to eq %w[id user_id name]
+          project.update!(name: 'random 99')
+          project.reload
+          expect(project.attributes.keys).to eq %w[id user_id name]
+          expect(project.name).to eq 'random 99'
+        end
+      end
+
+      it 'validates the passive column if it is changed' do
+        Project.create!(user_id: user.id, name: 'random 1', description: 'a description', guidelines: 'Guidelines')
+        Project.create!(user_id: user.id, name: 'random 2', description: 'a description', guidelines: 'Guidelines')
+        Project.where('id > ?', 0).find_each do |project|
+          expect(project.attributes.keys).to match_array %w[id name user_id]
+          expect(project.description).to eq 'a description'
+
+          project.update(name: 'new name')
+          expect(project.errors.empty?).to eq true
+
+          project.update(description: '')
+          expect(project.errors[:description]).to eq ['can\'t be blank']
+          project.update(description: '-')
+
+          expect(project.attributes.keys).to match_array %w[id name user_id description]
+          project.reload
+
+          expect(project.attributes.keys).to match_array %w[id name user_id]
+          expect(project.name).to eq 'new name'
+          expect(project.description).to eq '-'
+          expect(project.attributes.keys).to match_array %w[id name user_id description]
+        end
+      end
+    end
   end
 end

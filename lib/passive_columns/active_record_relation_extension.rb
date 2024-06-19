@@ -5,19 +5,23 @@ module PassiveColumns
   # to automatically select all columns except passive columns if no columns are selected.
   module ActiveRecordRelationExtension
     def exec_main_query(**args)
-      _set_columns_except_passive_if_nothing_selected
+      if klass.try(:_passive_columns).present? && select_values.blank?
+        self.select_values = klass.column_names - klass._passive_columns
+      end
       super
     end
 
     def to_sql
-      _set_columns_except_passive_if_nothing_selected
+      return @to_sql unless @to_sql.nil?
+
+      # @see ActiveRecord::QueryMethods::assert_mutability!
+      return super if @loaded || (defined?(@arel) && @arel)
+
+      if klass.try(:_passive_columns).present? && select_values.blank?
+        self.select_values = klass.column_names - klass._passive_columns
+      end
+
       super
-    end
-
-    def _set_columns_except_passive_if_nothing_selected
-      return nil if klass.try(:_passive_columns).blank? || select_values.any?
-
-      self.select_values = klass.column_names - klass._passive_columns
     end
   end
 end
