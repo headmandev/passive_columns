@@ -1,9 +1,11 @@
-require_relative "lib/passive_columns/version"
+$:.push File.expand_path("lib", __dir__)
+
+require "passive_columns/version"
 
 Gem::Specification.new do |spec|
   spec.name         = 'passive_columns'
   spec.version      = PassiveColumns::VERSION
-  spec.summary      = 'Gem for retrieving columns from a database on demand'
+  spec.summary      = 'A gem that extends Active Record to retrieve columns from a db on demand'
   spec.description  = 'A gem that allows you to exclude some columns from a SELECT query by default and load them only on demand'
   spec.author       = "Dmitry Golovin"
   spec.email        = "headman.dev@gmail.com"
