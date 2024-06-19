@@ -1,5 +1,3 @@
-# $:.push File.expand_path("lib", __dir__)
-# require "passive_columns/version"
 require_relative "lib/passive_columns/version"
 
 Gem::Specification.new do |spec|
