@@ -66,6 +66,43 @@ user.name
 By the way, it uses the Rails' `.pick` method to get the value of the column under the hood
 
 
+### Important
+
+If you want `passive_columns` to skip validation rules specific to the columns you exclude.<br>
+(in case they were not retrieved / modified)
+```ruby
+validates :huge_article, presence: true
+# Will be transformed into:
+# validates :huge_article, presence: true, if: -> { attributes.key?('huge_article') }
+```
+
+You must declare validation rules for `passive_columns` separately
+```ruby
+class Page < ActiveRecord::Base
+  include PassiveColumns
+  passive_columns :huge_article # Declare columns above the validation rules.
+
+  validates :name, presence: true
+  # Validation rules transformation will work
+  validates :huge_article, presence: true # It works for a separate rule.
+  # -> the rule is transformed into:
+  # -> validates :huge_article, presence: true, if: -> { attributes.key?('huge_article') }
+end
+```
+
+```ruby
+class Page < ActiveRecord::Base
+  include PassiveColumns
+  passive_columns :huge_article # Declare columns above the validation rules.
+
+  # Validation rules transformation WON'T work
+  validates :name, :huge_article, presence: true # It doesn't work for combined rules.
+  # -> the rule remains the same:
+  # -> validates :huge_article, presence: true
+end
+```
+
+
 ## Installation
 Add this line to your Gemfile:
 
@@ -123,13 +160,19 @@ One way to avoid this is to check for the presence of the attribute before valid
 validates :huge_article, presence: true, if: -> { attributes.key?('huge_article') }
 ```
 
-Unfortunately, boilerplate code is needed for such a simple task.
-You just wanted to exclude some columns and be able to manipulate a model without extra steps.
+Unfortunately, boilerplate code is needed for such a simple task. <br>
+But the only thing you wanted was to exclude some columns and be able to manipulate a model without extra steps.
 
-`passive_columns` tries to solve this problem by allowing you to exclude columns from the selection 
-and also allows you to retrieve them on demand when needed.
+By the way, after doing those steps, you still cannot retrieve the column when you need it after loading the scoped model...
 
+So, `passive_columns` tries to solve this problem by allowing you to exclude columns from the selection and also allowing you to retrieve them on demand when needed.
 
+---
+
+#### Inspiration
+There are similar gems that were relatively popular but are no longer supported. Let's give them the honor they deserve:
+- [lazy_columns](https://github.com/jorgemanrubia/lazy_columns)
+- [columns_on_demand](https://github.com/willbryant/columns_on_demand)
 
 ## License
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
