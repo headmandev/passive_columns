@@ -98,7 +98,7 @@ class Page < ActiveRecord::Base
   # Validation rules transformation WON'T work
   validates :name, :huge_article, presence: true # It doesn't work for combined rules.
   # -> the rule remains the same:
-  # -> validates :huge_article, presence: true
+  # -> validates :name, :huge_article, presence: true
 end
 ```
 
