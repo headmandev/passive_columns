@@ -26,7 +26,7 @@ module PassiveColumns
       value = pick_value(column)
       model[column] = value
       model.send(:clear_attribute_change, column)
-      value
+      model[column]
     end
 
     private

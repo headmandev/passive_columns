@@ -21,7 +21,7 @@ RSpec.describe 'PassiveColumns' do
 
       it 'preloads the column on demand and caches it into the model' do
         project = Project.create!(user_id: user.id, name: 'Project', description: 'a description', guidelines: 'g')
-        expect(project.attributes.keys).to match_array(%w[id name user_id guidelines description])
+        expect(project.attributes.keys).to match_array(%w[id name user_id guidelines description settings])
 
         project.reload
         expect(project.attributes.keys).to match_array(%w[id name user_id])
@@ -48,14 +48,15 @@ RSpec.describe 'PassiveColumns' do
 
       it 'retrieves columns other than passive ones declared in the child model' do
         ProjectWithPassiveDescription.create!(user_id: user.id, name: 'Project', description: 'd', guidelines: 'g')
-        expect(ProjectWithPassiveDescription.take.attributes.keys).to match_array(%w[id name user_id guidelines])
+        expect(ProjectWithPassiveDescription.take.attributes.keys).to \
+          match_array(%w[id name user_id guidelines settings])
       end
 
       it 'includes the association and preloads its columns without passive ones' do
         ProjectWithPassiveDescription.create!(user_id: user.id, name: 'Project', description: 'd', guidelines: 'g')
         users = User.includes(:projects_with_passive_description).all
         projects = users[0].projects_with_passive_description
-        expect(projects[0].attributes.keys).to match_array(%w[id name user_id guidelines])
+        expect(projects[0].attributes.keys).to match_array(%w[id name user_id settings guidelines])
       end
     end
 
@@ -70,7 +71,7 @@ RSpec.describe 'PassiveColumns' do
 
         expect(user.projects_with_passive_description.count).to eq 1
         expect(user.projects_with_passive_description.take.attributes.keys).to \
-          match_array(%w[id name user_id guidelines])
+          match_array(%w[id name user_id settings guidelines])
       end
     end
 
@@ -145,7 +146,7 @@ RSpec.describe 'PassiveColumns' do
         expect(sql).to \
           eq(
             'SELECT "projects"."id", "projects"."user_id", ' \
-            '"projects"."name", "projects"."guidelines" FROM "projects" WHERE (id > 0)'
+            '"projects"."name", "projects"."guidelines", "projects"."settings" FROM "projects" WHERE (id > 0)'
           )
       end
     end
@@ -185,6 +186,34 @@ RSpec.describe 'PassiveColumns' do
           expect(project.description).to eq '-'
           expect(project.attributes.keys).to match_array %w[id name user_id description]
         end
+      end
+    end
+
+    context 'complex attribute' do
+      it 'checks proper assignment for child attributes' do
+        Project.create!(
+          user_id: user.id, name: 'name', description: 'text', guidelines: 'Guidelines', settings: { color: 'white' }
+        )
+
+        project = Project.take
+        expect(project.attributes.keys).to match_array %w[id name user_id]
+        project.settings.assign_attributes({ color: 'red' })
+        expect(project.settings.changes).to eq({ 'color' => %w[white red] })
+        project.settings_will_change!
+        expect(project.changes).not_to eq({})
+        expect(project.changes['settings'].map(&:attributes)).to eq([{ color: 'white' }, { color: 'red' }])
+      end
+
+      it 'checks proper assignment for child attributes' do
+        Project.create!(
+          user_id: user.id, name: 'name', description: 'text', guidelines: 'Guidelines', settings: { color: 'white' }
+        )
+
+        project = Project.take
+        expect(project.attributes.keys).to match_array %w[id name user_id]
+        project.settings.assign_attributes({ color: 'white' })
+        expect(project.settings.changes).to eq({})
+        expect(project.changes).to eq({})
       end
     end
   end

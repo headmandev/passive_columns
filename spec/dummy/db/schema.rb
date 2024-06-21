@@ -11,6 +11,7 @@ ActiveRecord::Schema.define(version: 2024_05_06_152000) do
     t.string 'name', null: false
     t.text 'description', default: ''
     t.text 'guidelines', default: ''
+    t.string 'settings', default: '{}'
   end
 
   add_foreign_key 'projects', 'users', on_update: :cascade

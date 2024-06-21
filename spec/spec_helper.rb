@@ -20,15 +20,3 @@ ActiveRecord::Base.establish_connection(
 )
 
 load "#{Rails.root}/db/schema.rb"
-
-# def build_custom_product_class(&block)
-#   klass = Class.new(Product) do
-#     def self.model_name
-#       ActiveModel::Name.new(self, nil, "product")
-#     end
-#   end
-#
-#   klass.instance_eval(&block)
-#
-#   klass
-# end
