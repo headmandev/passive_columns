@@ -83,9 +83,13 @@ module PassiveColumns
     # Otherwise, the passive column will be retrieved from DB before validation itself.
     def set_callback(name, *filter_list, &block)
       opts = filter_list.extract_options!
-      if name == :validate && opts[:attributes]&.one?
-        passive_column = opts[:attributes].map(&:to_s) & _passive_columns
-        opts[:if] = ([-> { attributes.key?(passive_column.first) }] + Array(opts[:if])) if passive_column.present?
+
+      if name == :validate
+        attrs = opts[:attributes] || filter_list[0].attributes
+        if attrs&.one?
+          passive_column = attrs.map(&:to_s) & _passive_columns
+          opts[:if] = ([-> { attributes.key?(passive_column.first) }] + Array(opts[:if])) if passive_column.present?
+        end
       end
       super(name, *filter_list, opts, &block)
     end

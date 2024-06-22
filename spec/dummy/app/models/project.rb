@@ -6,9 +6,9 @@ class Project < ActiveRecord::Base
   include PassiveColumns
   belongs_to :user
 
-  attribute :settings, :project_settings_type, default: '{"color": "purple"}'
-
   passive_columns :guidelines, :description, :settings
+
+  attribute :settings, :project_settings_type, default: '{"color": "purple"}'
 
   validates :name, presence: true
 

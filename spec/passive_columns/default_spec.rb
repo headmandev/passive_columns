@@ -164,7 +164,7 @@ RSpec.describe 'PassiveColumns' do
         end
       end
 
-      it 'validates the passive column if it is changed' do
+      it 'validates the passive column if it has been changed' do
         Project.create!(user_id: user.id, name: 'random 1', description: 'a description', guidelines: 'Guidelines')
         Project.create!(user_id: user.id, name: 'random 2', description: 'a description', guidelines: 'Guidelines')
         Project.where('id > ?', 0).find_each do |project|
