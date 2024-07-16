@@ -5,7 +5,7 @@ module PassiveColumns
   class Loader
     attr_reader :passive_columns, :model
 
-    # @param [LazyColumns] model
+    # @param [ActiveRecord::Base] model
     # @param [Array<Symbol>] passive_columns
     def initialize(model, passive_columns)
       @model = model
@@ -35,8 +35,16 @@ module PassiveColumns
       model.class.unscoped.where(identity_constraints).pick(column)
     end
 
-    def identity_constraints
-      @identity_constraints ||= model.send(:_query_constraints_hash)
+    if ActiveRecord::VERSION::MAJOR >= 7
+      def identity_constraints
+        @identity_constraints ||= model.send(:_query_constraints_hash)
+      end
+    else
+      def identity_constraints
+        @identity_constraints ||= {
+          model.instance_variable_get(:@primary_key) => model.id_in_database
+        }
+      end
     end
   end
 end
