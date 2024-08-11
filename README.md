@@ -1,6 +1,6 @@
 # Passive Columns
 A gem that extends `Active Record` to retrieve columns from DB on demand.<br>
-Works with `Rails` >= 7 and `Ruby` >= 2.7
+Works with `Rails` >= 6.1 and `Ruby` >= 2.7
 
 ## Usage
 
