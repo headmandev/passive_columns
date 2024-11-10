@@ -94,10 +94,12 @@ module PassiveColumns
       super(name, *filter_list, opts, &block)
     end
 
-    def cached_find_by_statement(key, &block)
-      cache = @find_by_statement_cache[connection.prepared_statements]
-      cache.compute_if_absent(key) do
-        ActiveRecord::StatementCache.create(connection) do |params|
+    def cached_find_by_statement(*args, &block)
+      con = args.size == 2 ? args[0] : connection
+      cache = @find_by_statement_cache[con.prepared_statements]
+
+      cache.compute_if_absent(args.last) do
+        ActiveRecord::StatementCache.create(con) do |params|
           relation = block.call params
           PassiveColumns.apply_select_scope_to(relation)
           relation
