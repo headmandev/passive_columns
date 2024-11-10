@@ -60,6 +60,20 @@ RSpec.describe 'PassiveColumns' do
       end
     end
 
+    context 'finder methods that work via cached_find_by_statement mechanism' do
+      it 'retrieves columns except passive ones by find_by' do
+        Project.create!(id: 1, user_id: user.id, name: 'Project', description: 'a description', guidelines: 'g')
+        model = Project.find_by(id: 1)
+        expect(model.attributes.keys).to match_array(%w[id name user_id])
+      end
+
+      it 'retrieves columns except passive ones by find' do
+        Project.create!(id: 1, user_id: user.id, name: 'Project', description: 'a description', guidelines: 'g')
+        model = Project.find(1)
+        expect(model.attributes.keys).to match_array(%w[id name user_id])
+      end
+    end
+
     context 'associations' do
       it 'retrieves columns except passive ones' do
         Project.create!(user_id: user.id, name: 'Project', description: 'a description', guidelines: 'Guidelines')

@@ -93,6 +93,28 @@ module PassiveColumns
       end
       super(name, *filter_list, opts, &block)
     end
+
+    def cached_find_by_statement(key, &block)
+      cache = @find_by_statement_cache[connection.prepared_statements]
+      cache.compute_if_absent(key) do
+        ActiveRecord::StatementCache.create(connection) do |params|
+          relation = block.call params
+          PassiveColumns.apply_select_scope_to(relation)
+          relation
+        end
+      end
+    end
+  end
+
+  # This method is used to apply the select scope to the relation.
+  # It is used to automatically select all columns except passive columns if no columns are selected.
+  # @param [ActiveRecord::Relation] relation
+  # @return [void]
+  def self.apply_select_scope_to(relation)
+    return if relation.klass.try(:_passive_columns).blank?
+    return if relation.select_values.present?
+
+    relation.select_values = relation.klass.column_names - relation.klass._passive_columns
   end
 
   # This method loads a column value, if not already loaded, from the database

@@ -6,16 +6,12 @@ module PassiveColumns
   module ActiveRecordRelationExtension
     if ActiveRecord::VERSION::MAJOR >= 7
       def exec_main_query(...)
-        if klass.try(:_passive_columns).present? && select_values.blank?
-          self.select_values = klass.column_names - klass._passive_columns
-        end
+        PassiveColumns.apply_select_scope_to(self)
         super
       end
     else
       def exec_queries(...)
-        if klass.try(:_passive_columns).present? && select_values.blank?
-          self.select_values = klass.column_names - klass._passive_columns
-        end
+        PassiveColumns.apply_select_scope_to(self)
         super
       end
     end
@@ -26,10 +22,7 @@ module PassiveColumns
       # @see ActiveRecord::QueryMethods::assert_mutability!
       return super if @loaded || (defined?(@arel) && @arel)
 
-      if klass.try(:_passive_columns).present? && select_values.blank?
-        self.select_values = klass.column_names - klass._passive_columns
-      end
-
+      PassiveColumns.apply_select_scope_to(self)
       super
     end
   end
