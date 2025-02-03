@@ -238,11 +238,16 @@ RSpec.describe 'PassiveColumns' do
     it 'when a passive-column models creates a mon-passive-column model via nested assignation' do
       p = Project.create!(user_id: user.id, name: 'Project', description: 'a description', guidelines: 'g')
 
-      Email.create!(
+      email = Email.create!(
         from: 'hey@heyheyhey.test',
         mail: 'html mail',
         email_items_attributes: [{ item_type: 'Project', item_id: p.id }]
       )
+
+      expect(email.attributes.keys).to match_array %w[id from mail subject to]
+
+      email = Email.take
+      expect(email.attributes.keys).to match_array %w[id from subject to]
     end
   end
 end
