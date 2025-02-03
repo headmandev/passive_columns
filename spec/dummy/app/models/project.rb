@@ -4,9 +4,12 @@ ActiveRecord::Type.register(:project_settings_type, ProjectSettingsType)
 
 class Project < ActiveRecord::Base
   include PassiveColumns
-  belongs_to :user
-
   passive_columns :guidelines, :description, :settings
+
+  belongs_to :user
+  has_many :project_items, dependent: :destroy
+
+  accepts_nested_attributes_for :project_items
 
   attribute :settings, :project_settings_type, default: '{"color": "purple"}'
 
