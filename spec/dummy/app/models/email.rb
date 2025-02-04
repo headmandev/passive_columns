@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 #
-class Email < ApplicationRecord
+class Email < ActiveRecord::Base
   include PassiveColumns
   passive_columns :mail
 

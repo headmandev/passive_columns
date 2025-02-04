@@ -200,6 +200,18 @@ RSpec.describe 'PassiveColumns' do
         expect(project.attributes.keys).to match_array %w[id name user_id description]
       end
     end
+
+    it 'skips loading columns even through preloading' do
+      project = Project.create! user_id: user.id, name: 'Project', description: 'a description', guidelines: 'g'
+
+      email = Email.create!(id: SecureRandom.uuid, from: 'hey@heyheyhey.test', mail: 'html mail')
+      expect(email.attributes.keys).to match_array %w[id from mail subject to]
+      EmailItem.create!(email_id: email.id, item_type: 'Project', item_id: project.id)
+
+      email = Email.includes(email_items: [:item]).take
+      expect(email.attributes.keys).to match_array %w[id from subject to]
+      expect(email.email_items.first.item.attributes.keys).to match_array %w[id name user_id]
+    end
   end
 
   context 'complex attribute' do
@@ -239,6 +251,7 @@ RSpec.describe 'PassiveColumns' do
       p = Project.create!(user_id: user.id, name: 'Project', description: 'a description', guidelines: 'g')
 
       email = Email.create!(
+        id: SecureRandom.uuid,
         from: 'hey@heyheyhey.test',
         mail: 'html mail',
         email_items_attributes: [{ item_type: 'Project', item_id: p.id }]
