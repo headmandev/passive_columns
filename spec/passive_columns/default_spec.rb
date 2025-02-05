@@ -6,6 +6,8 @@ RSpec.describe 'PassiveColumns' do
   ActiveRecord::Base.logger = Logger.new($stdout) if defined?(ActiveRecord::Base)
 
   after(:each) do
+    EmailItem.delete_all
+    Email.delete_all
     Project.delete_all
     User.delete_all
   end
