@@ -40,7 +40,7 @@ module PassiveColumns
     class_attribute :_passive_columns, default: []
   end
 
-  class_methods do
+  class_methods do # rubocop:disable Metrics/BlockLength
     # Specify column names for on-demand loading.
     # While the columns aren't actively loading, they are still responsive and load when called upon.
     #  passive_columns :huge_article, :settings

@@ -50,7 +50,7 @@ RSpec.describe 'PassiveColumns' do
     it 'retrieves columns other than passive ones declared in the child model' do
       ProjectWithPassiveDescription.create!(user_id: user.id, name: 'Project', description: 'd', guidelines: 'g')
       expect(ProjectWithPassiveDescription.take.attributes.keys).to \
-      match_array(%w[id name user_id guidelines settings])
+        match_array(%w[id name user_id guidelines settings])
     end
 
     it 'includes the association and preloads its columns without passive ones' do
@@ -86,7 +86,7 @@ RSpec.describe 'PassiveColumns' do
 
       expect(user.projects_with_passive_description.count).to eq 1
       expect(user.projects_with_passive_description.take.attributes.keys).to \
-      match_array(%w[id name user_id settings guidelines])
+        match_array(%w[id name user_id settings guidelines])
     end
   end
 
@@ -153,16 +153,16 @@ RSpec.describe 'PassiveColumns' do
     it 'returns correct query if there is a condition' do
       sql = Project.where('id > ?', 0).to_sql
       expect(sql).to \
-      eq('SELECT "projects"."id", "projects"."user_id", "projects"."name" FROM "projects" WHERE (id > 0)')
+        eq('SELECT "projects"."id", "projects"."user_id", "projects"."name" FROM "projects" WHERE (id > 0)')
     end
 
     it 'returns correct query if there is the parent class with passive_columns and condition' do
       sql = ProjectWithPassiveDescription.where('id > ?', 0).to_sql
       expect(sql).to \
-      eq(
-        'SELECT "projects"."id", "projects"."user_id", ' \
-        '"projects"."name", "projects"."guidelines", "projects"."settings" FROM "projects" WHERE (id > 0)'
-      )
+        eq(
+          'SELECT "projects"."id", "projects"."user_id", ' \
+          '"projects"."name", "projects"."guidelines", "projects"."settings" FROM "projects" WHERE (id > 0)'
+        )
     end
   end
 

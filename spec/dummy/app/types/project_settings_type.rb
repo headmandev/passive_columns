@@ -4,6 +4,7 @@ class ProjectSettingsType < ActiveRecord::Type::Value
   class Settings
     include ActiveModel::Model
     include ActiveModel::Dirty
+
     attr_accessor :color
 
     define_attribute_methods :color
