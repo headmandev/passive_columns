@@ -12,6 +12,13 @@ RSpec.configure do |config|
   config.order = :random
   config.formatter = :documentation
   config.color = true
+
+  config.around(:each) do |example|
+    ActiveRecord::Base.connection.transaction do
+      example.run
+      raise ActiveRecord::Rollback
+    end
+  end
 end
 
 ActiveRecord::Base.establish_connection(

@@ -5,13 +5,6 @@ require_relative '../spec_helper'
 RSpec.describe 'PassiveColumns' do
   ActiveRecord::Base.logger = Logger.new($stdout) if defined?(ActiveRecord::Base)
 
-  after(:each) do
-    EmailItem.delete_all
-    Email.delete_all
-    Project.delete_all
-    User.delete_all
-  end
-
   let(:user) { User.create!(email: 'jello@jello.com', default_project_id: nil) }
 
   context 'active record relation' do
