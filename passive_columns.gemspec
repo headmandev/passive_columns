@@ -7,7 +7,7 @@ Gem::Specification.new do |spec|
   spec.version      = PassiveColumns::VERSION
   spec.summary      = 'A gem that extends Active Record to retrieve columns from a db on demand'
   spec.description  = 'A gem that allows you to exclude some columns from a SELECT query by default and load them only on demand'
-  spec.author       = "Dmitry Golovin"
+  spec.author       = "Dmitrii Golovin"
   spec.email        = "headman.dev@gmail.com"
   spec.homepage     = "https://github.com/headmandev/passive_columns"
   spec.license      = "MIT"
@@ -20,6 +20,5 @@ Gem::Specification.new do |spec|
   spec.add_dependency "activesupport", ">= 6.1"
 
   spec.add_development_dependency "rspec"
-  spec.add_development_dependency "rspec-rails"
   spec.add_development_dependency "rubocop"
 end

@@ -4,6 +4,7 @@ ActiveRecord::Type.register(:project_settings_type, ProjectSettingsType)
 
 class Project < ActiveRecord::Base
   include PassiveColumns
+
   passive_columns :guidelines, :description, :settings
 
   belongs_to :user

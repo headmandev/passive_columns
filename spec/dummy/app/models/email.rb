@@ -1,7 +1,8 @@
 # frozen_string_literal: true
-#
+
 class Email < ActiveRecord::Base
   include PassiveColumns
+
   passive_columns :mail
 
   has_many :email_items, dependent: :destroy
