@@ -54,6 +54,53 @@ RSpec.describe 'PassiveColumns' do
     end
   end
 
+  context 'with_passive_columns' do
+    it 'loads every column including passive when called with no arguments' do
+      Project.create!(user_id: user.id, name: 'Project', description: 'a description', guidelines: 'g')
+      project = Project.with_passive_columns.take
+      expect(project.attributes.keys).to match_array(%w[id name user_id guidelines description settings])
+    end
+
+    it 'lists every table column in the select clause when called with no arguments' do
+      expect(Project.with_passive_columns.to_sql).to eq(
+        'SELECT "projects"."id", "projects"."user_id", "projects"."name", ' \
+        '"projects"."description", "projects"."guidelines", "projects"."settings" FROM "projects"'
+      )
+    end
+
+    it 'adds only listed passive columns to the default select' do
+      Project.create!(user_id: user.id, name: 'Project', description: 'a description', guidelines: 'g')
+      project = Project.with_passive_columns(:description).take
+      expect(project.attributes.keys).to match_array(%w[id name user_id description])
+      expect(project.description).to eq 'a description'
+      expect(project.guidelines).to eq 'g'
+      expect(project.attributes.keys).to match_array(%w[id name user_id description guidelines])
+    end
+
+    it 'ignores non-passive column names in the argument list' do
+      Project.create!(user_id: user.id, name: 'Project', description: 'a description', guidelines: 'g')
+      sql = Project.with_passive_columns(:name, :description).to_sql
+      expect(sql).to eq(Project.with_passive_columns(:description).to_sql)
+    end
+
+    it 'behaves like a normal relation when no passive names remain after filtering' do
+      expect(Project.with_passive_columns(:name, :user_id).to_sql).to eq(Project.all.to_sql)
+    end
+
+    it 'replaces a narrow select with the full column list when with_passive_columns has no arguments' do
+      expect(Project.select(:id).with_passive_columns.to_sql).to eq(
+        'SELECT "projects"."id", "projects"."user_id", "projects"."name", ' \
+        '"projects"."description", "projects"."guidelines", "projects"."settings" FROM "projects"'
+      )
+    end
+
+    it 'merges with_passive_columns into an association scope' do
+      Project.create!(user_id: user.id, name: 'Project', description: 'a description', guidelines: 'g')
+      project = user.projects.merge(Project.with_passive_columns(:description)).take
+      expect(project.attributes.keys).to match_array(%w[id name user_id description])
+    end
+  end
+
   context 'finder methods that work via cached_find_by_statement mechanism' do
     it 'retrieves columns except passive ones by find_by' do
       Project.create!(id: 1, user_id: user.id, name: 'Project', description: 'a description', guidelines: 'g')

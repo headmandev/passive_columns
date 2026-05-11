@@ -33,11 +33,40 @@ require 'passive_columns/loader'
 #
 # The next time you call the passive column it won't hit the database as it is already loaded.
 #  page.huge_article # => 'Some huge article...'
+#
+# To load passive columns in the same query, use +with_passive_columns+ with no arguments (all passive columns)
+# or pass passive column names; any other names are ignored.
+#  Page.with_passive_columns.to_a
+#  Page.with_passive_columns(:huge_article).to_a
 module PassiveColumns
   extend ActiveSupport::Concern
 
   included do
     class_attribute :_passive_columns, default: []
+
+    # Eager-load passive columns in the main SELECT instead of omitting them.
+    # With no arguments, sets +select_values+ to all +column_names+ (including passive columns);
+    # Active Record turns that into the SELECT list.
+    # With arguments, only names listed in +passive_columns+ are merged into +select_values+ with
+    # the usual non-passive column list; other names are ignored. If none of the arguments are
+    # passive columns, the relation behaves like a normal query (passive columns still omitted).
+    #
+    # @param [Array<Symbol, String>] requested
+    # @return [ActiveRecord::Relation]
+    scope(:with_passive_columns, lambda do |*requested|
+      return self if klass._passive_columns.blank?
+
+      if requested.empty?
+        spawn.tap { |r| r.select_values = klass.column_names.dup }
+      else
+        passive_only = requested.map(&:to_s).uniq.select { |c| klass._passive_columns.include?(c) }
+        return self if passive_only.empty?
+
+        spawn.tap do |r|
+          r.select_values = klass.column_names - klass._passive_columns + passive_only
+        end
+      end
+    end)
   end
 
   class_methods do # rubocop:disable Metrics/BlockLength
