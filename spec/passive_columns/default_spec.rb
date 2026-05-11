@@ -144,6 +144,44 @@ RSpec.describe 'PassiveColumns' do
     end
   end
 
+  context 'lazy column debug logs' do
+    let(:log_io) { StringIO.new }
+
+    before do
+      @prev_project_logger = Project.logger
+      Project.logger = Logger.new(log_io).tap { |l| l.level = Logger::DEBUG }
+    end
+
+    after do
+      Project.logger = @prev_project_logger
+    end
+
+    it 'logs the same debug line for a passive reader' do
+      Project.create!(user_id: user.id, name: 'P', description: 'd', guidelines: 'g')
+      project = Project.select(:id).take!
+      project.description
+
+      expect(log_io.string).to include('[passive_columns] On-demand SQL load of Project#description')
+    end
+
+    it 'logs the same debug line for load_column' do
+      Project.create!(user_id: user.id, name: 'P', description: 'd', guidelines: 'g')
+      project = Project.select(:id).take!
+      project.load_column(:name)
+
+      expect(log_io.string).to include('[passive_columns] On-demand SQL load of Project#name')
+    end
+
+    it 'does not log when the logger level is above debug' do
+      Project.logger = Logger.new(log_io).tap { |l| l.level = Logger::INFO }
+      Project.create!(user_id: user.id, name: 'P', description: 'd', guidelines: 'g')
+      project = Project.select(:id).take!
+      project.description
+
+      expect(log_io.string).not_to include('[passive_columns]')
+    end
+  end
+
   context 'to_sql' do
     it 'does not break uninvolved models' do
       expect(User.all.to_sql).to eq('SELECT "users".* FROM "users"')

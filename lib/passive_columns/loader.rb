@@ -20,16 +20,29 @@ module PassiveColumns
 
       model.send(column)
     rescue ActiveModel::MissingAttributeError
+      materialize_missing_column(column, force)
+    end
+
+    private
+
+    def materialize_missing_column(column, force)
       allowed_columns = (force ? [column] : passive_columns).map(&:to_s)
       raise if allowed_columns.exclude?(column.to_s) || identity_constraints.value?(nil)
 
+      log_lazy_sql_load(column)
       value = pick_value(column)
       model[column] = value
       model.send(:clear_attribute_change, column)
       model[column]
     end
 
-    private
+    def log_lazy_sql_load(column)
+      logger = model.logger
+      return unless logger&.debug?
+
+      ctx = identity_constraints.map { |k, v| "#{k}=#{v.inspect}" }.join(', ')
+      logger.debug("[passive_columns] On-demand SQL load of #{model.class.name}##{column} (#{ctx})")
+    end
 
     def pick_value(column)
       model.class.unscoped.where(identity_constraints).pick(column)

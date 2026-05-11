@@ -86,6 +86,9 @@ user.name
 
 By the way, it uses the Rails' `.pick` method to get the value of the column under the hood
 
+### Logging on-demand SQL loads
+
+Whenever a passive attribute reader or `load_column` runs the extra `pick` query, the gem logs one **`debug`** line (prefix `[passive_columns]`, model, column, and primary-key context) **only if** `model.logger` is set — there is no fallback to `ActiveRecord::Base.logger`. Like other debug lines, it appears only when that logger’s level is **debug** (typical in `development`, usually not at `info` in production).
 
 ### Important
 
