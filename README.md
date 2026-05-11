@@ -37,6 +37,27 @@ But you still has an ability to retrieve the passive column on demand
   page.huge_article # => 'Some huge article...'
 ```
 
+### Eager-loading passive columns in the same query
+
+Use `with_passive_columns` when you want passive columns included in the main `SELECT` instead of loading them later.
+
+```ruby
+  # All columns (including every passive column)
+  Page.with_passive_columns
+
+  # Default non-passive columns plus only the passive columns you list.
+  # Any names that are not passive columns are ignored.
+  Page.with_passive_columns(:huge_article)
+
+  # On an association (scope is on the associated model):
+  user.pages.with_passive_columns(:huge_article)
+
+  # Equivalent when you already have a relation object to merge:
+  user.pages.merge(Page.with_passive_columns(:huge_article))
+```
+
+`find` / `find_by` still use the default selection unless you chain `with_passive_columns` explicitly (for example `Page.with_passive_columns.find(id)`).
+
 ---
 
 
@@ -65,6 +86,9 @@ user.name
 
 By the way, it uses the Rails' `.pick` method to get the value of the column under the hood
 
+### Logging on-demand SQL loads
+
+Whenever a passive attribute reader or `load_column` runs the extra `pick` query, the gem logs one **`debug`** line (prefix `[passive_columns]`, model, column, and primary-key context) **only if** `model.logger` is set — there is no fallback to `ActiveRecord::Base.logger`. Like other debug lines, it appears only when that logger’s level is **debug** (typical in `development`, usually not at `info` in production).
 
 ### Important
 

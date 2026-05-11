@@ -1,11 +1,6 @@
 .bundle/
 log/*.log
 pkg/
-test/dummy/db/*.sqlite3
-test/dummy/db/*.sqlite3-journal
-test/dummy/log/*.log
-/test/dummy/storage/
-test/dummy/tmp/
 Gemfile.lock
 Gemfile.local
 coverage/
@@ -14,3 +9,7 @@ coverage/
 doc/
 .yardoc/
 .ruby-version
+.idea/
+passive_columns-*.gem
+spec/dummy/log/*.log
+spec/dummy/tmp/
